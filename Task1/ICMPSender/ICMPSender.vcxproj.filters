@@ -15,12 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\NetDesign\ICMPReceiver\packet_header.h">
+    <ClInclude Include="packet_header.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\NetDesign\ICMPSender\Sender.cpp">
+    <ClCompile Include="ICMPSender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
