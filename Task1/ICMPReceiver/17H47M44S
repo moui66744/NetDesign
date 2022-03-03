@@ -1,0 +1,30 @@
+==================================================
+time: 17:47:44.447458 len: 74 
+---------------------------------
+Ethernet Header:
+Destination: 80:30:49:ad:49:b5
+Source: f4:83:cd:3f:4e:b8
+Type: IPv4(0x0800)
+---------------------------------
+IP Header:
+Version: 4
+Header Length: 20 bytes (5)
+Totoal Length: 60
+Identification: 0xa3d7 (41943)
+Flags: 0x00
+Fragment Offset: 0
+Time to Live: 50
+Protocol: ICMP(1)
+Header Checksum: 0x20d6
+Source Address: 1.1.1.1
+Destinction Address: 192.168.1.106
+---------------------------------
+ICMP Header:
+Type: 0 (Echo (ping) reply)
+Code: 0
+Checksum: 0x5509
+---------------------------------
+Data:
+abcdefghijklmnopqrstuvwabcdefghi
+==================================================
+
