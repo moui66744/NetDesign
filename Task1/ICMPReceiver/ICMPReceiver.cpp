@@ -61,7 +61,7 @@ void packet_handle(u_char* param, const struct pcap_pkthdr* header, const u_char
 	fprintf(fp, "%s\n", icmp_data);
 	fprintf(fp, "==================================================\n\n");
 	fclose(fp);
-	//exit(1);
+	exit(1);
 }
 
 int main() {
@@ -70,24 +70,13 @@ int main() {
 	pcap_t* adhandle;
 	char errbuf[PCAP_ERRBUF_SIZE];
 	u_int netmask;
-	char packet_filter[] = "ip and icmp and dst host 192.168.1.106";//过滤条件
+	char packet_filter[] = "ip and icmp and dst host 192.168.2.200";//过滤条件
 	struct bpf_program fcode;
 
-	////获取设备列表
-	//pcap_findalldevs_ex((char*)PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf);
-	//for (d = alldevs; d; d = d->next) {
-	//	printf("%d. %s", ++i, d->name);
-	//	if (d->description) printf("%s", d->description);
-	//	puts("");
-	//}
-	////输入设备编号
-	//printf("\nEnter the interface number (1-%d):", i);
-	//scanf_s("%d", &inum);
-	////打开指定适配器
-	//for (d = alldevs, i = 0; i < inum - 1; d = d->next, i++);
-
+	//获取设备列表
+	pcap_findalldevs_ex((char*)PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf);
 	//打开适配器
-	adhandle = pcap_open((char*)"//Device//NPF_{ADDAD27F-0AFB-4AE1-B166-5C704DF51D50}", 65536, PCAP_OPENFLAG_PROMISCUOUS, 1000, NULL, errbuf);
+	adhandle = pcap_open(alldevs->name, 65536, PCAP_OPENFLAG_PROMISCUOUS, 1000, NULL, errbuf);
 	netmask = 0xffffff;
 	//设置过滤器
 	if (pcap_compile(adhandle, &fcode, packet_filter, 1, netmask) < 0) {
@@ -98,7 +87,7 @@ int main() {
 		printf("\nError setting the filter\n");
 		return 0;
 	}
-	//printf("\nListening on %s...\n", d->description);
+	printf("\nListening on %s...\n", alldevs->description);
 	//pcap_freealldevs(alldevs);
 	//捕获
 	pcap_loop(adhandle, 0, packet_handle, NULL);
