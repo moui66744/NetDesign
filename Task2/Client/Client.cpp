@@ -25,7 +25,7 @@ int main() {
     while (1) {
         memset(sendBuf, 0, BUF_SIZE);
         gets_s(sendBuf);
-        strcat(sendBuf, " 2>&1");
+        //strcat(sendBuf, " 2>&1");
         send(sockClient, sendBuf, strlen(sendBuf), 0);
         while (1) {
             timeval tv;
