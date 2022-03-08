@@ -1,7 +1,7 @@
-#define SRC_IP { 192,168,1,100 }	//源主机IP
+#define SRC_IP { 10,23,108,56 }	//源主机IP
 #define DST_IP { 192,168,2,200 }		//目的主机IP
 #define SRC_MAC { 0x80, 0x30, 0x49, 0xAD, 0x49, 0xB5 }	//源主机MAC
-#define DST_MAC { 0xca, 0xe6, 0xa6, 0xf3, 0xb1, 0xb2 }	//网关路由MAC
+#define DST_MAC { 0x5c, 0xc9, 0x99, 0x63, 0x42, 0x01 }	//网关路由MAC
 
 //ICMP报文数据
 unsigned char* icmp_data = (unsigned char*)"abcdefghijklmnopqrstuvwabcdefghi";
