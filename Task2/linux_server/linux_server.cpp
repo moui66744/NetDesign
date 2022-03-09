@@ -1,7 +1,7 @@
-#include<iostream>
-#include<stdio.h>
-#include<sys/socket.h>
-#include<sys/types.h>
+#include <iostream>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <netinet/in.h>   //    sockaddr_in, "man 7 ip" ,htons
 #include <poll.h>         //     poll,pollfd
 #include <arpa/inet.h>   //inet_addr,inet_aton
@@ -25,8 +25,18 @@
 #define BUF_SIZE 512
 
 using namespace std;
-char buf_send[BUF_SIZE],buf_recv[BUF_SIZE];
+char buf_send[BUF_SIZE],buf_recv[BUF_SIZE],buf_cmd[BUF_SIZE];
 void fpvga(int sock);
+
+int process(char *cmd){
+	memset(buf_send,0,BUF_SIZE*sizeof(char));
+	FILE* fp;
+	fp = popen(buf_recv,"r");
+	fgets(buf_recv,BUF_SIZE,fp);
+	printf("%s\n",buf_recv);
+	pclose(fp);
+	return 0;
+}
 void* socket_handler(void *p){
 	int sock = *(int*)p;
 	printf("Welcome to Server\n");
@@ -34,7 +44,7 @@ void* socket_handler(void *p){
 	//send(sock,buf_recv,strlen(buf_send),0);
 	char op[OP_SIZE];	
 	while(true){
-		memset(buf_recv,0,BUF_SIZE);
+		memset(buf_recv,0,BUF_SIZE*sizeof(char));
 		printf("Ready to recv\n");
 		recv(sock,buf_recv,BUF_SIZE-1,0);
 		sscanf(buf_recv,"%s",op);
@@ -49,6 +59,7 @@ void* socket_handler(void *p){
 			fpvga(sock);
 		} else {
 			printf("command:%s\n",buf_recv);
+			process(buf_recv);
 			send(sock,buf_recv,strlen(buf_send),0);
 		}
 	}

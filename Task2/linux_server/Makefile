@@ -14,4 +14,11 @@ run: all
 	./obj_dir/$(TARGET)
 debug:all
 	gdb ./obj_dir/$(TARGET)
-
+test:
+	verilator --exe --build  --cc\
+		fpvga.cpp\
+		top.v  \
+		-LDFLAGS -lpthread -CFLAGS -DTOP_NAME=Vtop -CFLAGS -g\
+		-CFLAGS -DUSE_MAIN\
+		-o $(TARGET)
+	./obj_dir/$(TARGET)

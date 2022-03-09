@@ -12,20 +12,26 @@ using namespace std;
 TOP_NAME *top;
 VerilatedContext *contextp;
 
-static char buf_recv[BUFF_SIZE];
+static char buf_recv[BUFF_SIZE]="d1000100010001000";
 static char buf_send[BUFF_SIZE];
-static char sw = 0;
-static char led = 0;
+static int sw = 0;
+static int led = 0;
 bool fpvga_get_data(int sock){
-	memset(buf_recv,0,BUFF_SIZE);
+#ifndef USE_MAIN
+	memset(buf_recv,0,BUFF_SIZE*sizeof(char));
 	recv(sock,buf_recv,BUFF_SIZE-1,0);
+#endif
 	char * queue = buf_recv;
+#ifdef USE_MAIN
 	printf("led:%s,queue[0]=%c\n",buf_recv,queue[0]);
+#endif	
 	if (queue[0] == 'd'){
 		queue = queue + 1;
 		for(int i=0;i<SW_NUM;i++){
-			printf("i=%d\n",i);
-			sw |= (queue[i] - '0') << i;
+#ifdef USE_MAIN
+			printf("i=%d,queue[i]=%d,num=%d\n",i,queue[i],((queue[i] - '0') << (SW_NUM-i+1)));
+#endif
+			sw += ((queue[i] - '0') << (SW_NUM-i+1));
 		}
 		printf("%d\n",sw);
 		return true;
@@ -36,9 +42,15 @@ bool fpvga_get_data(int sock){
 }
 void fpvga_send_data(int sock){
 	for (int i = 0;i < LED_NUM ; i++){
-		buf_send[i] = (led >> i)& 1 + '0';
+		buf_send[i] = ((led >> i)& 1) + '0';
+		printf("i=%d:%d\n",i,buf_send[i]);
 	}
+	buf_send[LED_NUM] = '\0';
+#ifndef USE_MAIN
 	send(sock,buf_send,BUFF_SIZE-1,0);
+#endif
+	printf("%s\n",buf_send);
+
 }
 void fpvga_init() {
 	contextp = new VerilatedContext;
@@ -46,10 +58,11 @@ void fpvga_init() {
 }
 
 void fpvga_single(){
-
+	printf("single test\n");
 		top->sw = sw;
 		top->eval();
 		led = top->led;
+		printf("In this test,sw=%d,led=%d\n",sw,led);
 }
 void fpvga_clear()
 {
@@ -70,3 +83,13 @@ void fpvga(int sock){
 	}
 	fpvga_clear();
 }
+#ifdef USE_MAIN
+int main(){
+	fpvga_init(); 
+	sprintf(buf_recv,"d0000100010001000");
+	if(fpvga_get_data(0))
+		fpvga_single();
+	fpvga_send_data(0);
+	return 0;
+}
+#endif

@@ -10,15 +10,13 @@ default: linux_server
 # Perl executable (from $PERL)
 PERL = perl
 # Path to Verilator kit (from $VERILATOR_ROOT)
-VERILATOR_ROOT = /home/zakia/GitRepo/verilator
+VERILATOR_ROOT = /usr/share/verilator
 # SystemC include directory with systemc.h (from $SYSTEMC_INCLUDE)
 SYSTEMC_INCLUDE ?= 
 # SystemC library directory with libsystemc.a (from $SYSTEMC_LIBDIR)
 SYSTEMC_LIBDIR ?= 
 
 ### Switches...
-# C++ code coverage  0/1 (from --prof-c)
-VM_PROFC = 0
 # SystemC output mode?  0/1 (from --sc)
 VM_SC = 0
 # Legacy or SystemC output mode?  0/1 (from --sc)
