@@ -16,26 +16,57 @@
 #include <string>
 
 #include <pthread.h>
-#include <verilated.h>
+
+#include <sys/ipc.h>
+#include <sys/msg.h>
 
 #include <fstream>
 
 #define PORT_ID 6000
 #define OP_SIZE 64
 #define BUF_SIZE 512
+#define MSG_SIZE 32
+#define MSG_KEY_A 9527
+#define MSG_KEY_B 9528
 
 using namespace std;
-char buf_send[BUF_SIZE],buf_recv[BUF_SIZE],buf_cmd[BUF_SIZE];
-void fpvga(int sock);
 
-int process(char *cmd){
+struct msg_item_t{
+	long int type = 4;
+	char msg[MSG_SIZE];
+}msg_item;
+char buf_send[BUF_SIZE],buf_recv[BUF_SIZE],buf_cmd[BUF_SIZE],buf_res[BUF_SIZE];
+void fpvga_interface(int sock){
+	int msg_id_1 = msgget((key_t)MSG_KEY_A,0666|IPC_CREAT);
+	int msg_id_2 = msgget((key_t)MSG_KEY_B,0666|IPC_CREAT);
+	execl("make","vmodel",NULL);
+	FILE *fp = popen("obj_dir/vmodel","w");
+	while(true){
+		recv(sock,buf_recv,BUF_SIZE-1,0);
+		fprintf(fp,"%s",buf_recv);
+		msgrcv(msg_id_2,&(msg_item),sizeof(msg_item_t),0,0);
+		strcpy(buf_send,msg_item.msg);
+			send(sock,buf_send,BUF_SIZE-1,0);
+		}
+}
+
+string process(char *cmd){
 	memset(buf_send,0,BUF_SIZE*sizeof(char));
 	FILE* fp;
-	fp = popen(buf_recv,"r");
-	fgets(buf_recv,BUF_SIZE,fp);
-	printf("%s\n",buf_recv);
+	string res;
+	printf("in process :cmd =[%s]\n",cmd);
+	fp = popen(cmd,"r");
+	while(feof(fp) == 0){
+		memset(buf_res,0,BUF_SIZE*sizeof(char));
+		fread(buf_res,1,BUF_SIZE-1,fp);	
+		printf("in function process:buf_res=%s\n",buf_res);
+		res.append(buf_res);
+	}
+	res.append("ERESP\n");
+	printf("buffer_recv:%s\nbuffer_send%s\n",buf_recv,buf_send);
 	pclose(fp);
-	return 0;
+	printf("live so far\n");
+	return res;
 }
 void* socket_handler(void *p){
 	int sock = *(int*)p;
@@ -56,11 +87,15 @@ void* socket_handler(void *p){
 			printf("fpvga launching\n");
 			sprintf(buf_send,"fpvga enable");
 			send(sock,buf_recv,strlen(buf_send),0);
-			fpvga(sock);
+			fpvga_interface(sock);
 		} else {
-			printf("command:%s\n",buf_recv);
-			process(buf_recv);
-			send(sock,buf_recv,strlen(buf_send),0);
+			printf("command:%s %s\n",op,buf_recv);
+			memset(buf_cmd,0,BUF_SIZE);
+			sprintf(buf_cmd,"%s 2>&1",buf_recv);
+			string res = process(buf_cmd);
+			printf("in function socket handler:\nres=%s\n",res.c_str());
+			send(sock,res.c_str(),res.size(),0);
+			//send(sock,buf_recv,strlen(buf_recv),0);
 		}
 	}
 	close(sock);

@@ -3,24 +3,24 @@
 
 #include "Vtop__Syms.h"
 #include "Vtop.h"
-
-
+#include "Vtop___024root.h"
 
 // FUNCTIONS
 Vtop__Syms::~Vtop__Syms()
 {
 }
 
-Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, Vtop* topp, const char* namep)
-    // Setup locals
+Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, const char* namep,Vtop* modelp)
     : VerilatedSyms{contextp}
-    , __Vm_namep(namep)
-    , __Vm_didInit(false)
-    // Setup submodule names
+    // Setup internal state of the Syms class
+    , __Vm_modelp(modelp)
+    // Setup module instances
+    , TOP(namep)
 {
-    // Pointer to top level
-    TOPp = topp;
+    // Configure time unit / time precision
+    _vm_contextp__->timeunit(-12);
+    _vm_contextp__->timeprecision(-12);
     // Setup each module's pointers to their submodules
     // Setup each module's pointer back to symbol table (for public functions)
-    TOPp->__Vconfigure(this, true);
+    TOP.__Vconfigure(this, true);
 }

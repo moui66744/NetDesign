@@ -1,6 +1,11 @@
 #include<verilated.h>
+#include <iostream>
 #include "Vtop.h"
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/msg.h>
+#include <sys/ipc.h>
+#include <stdio.h>
 using namespace std;
 
 /*
@@ -9,17 +14,30 @@ using namespace std;
 #define SW_NUM 16
 #define LED_NUM 16
 #define BUFF_SIZE 512
+#define MSG_SIZE 32
+
+#define MSG_KEY_A 9527
+#define MSG_KEY_B 9528
 TOP_NAME *top;
 VerilatedContext *contextp;
+int msg_id_1;
+int msg_id_2;
 
+struct msg_item_t {
+	long int type;
+	char msg[MSG_SIZE];
+}msg_item;
 static char buf_recv[BUFF_SIZE]="d1000100010001000";
 static char buf_send[BUFF_SIZE];
-static int sw = 0;
-static int led = 0;
+static unsigned short sw = 0;
+static unsigned short led = 0;
 bool fpvga_get_data(int sock){
 #ifndef USE_MAIN
 	memset(buf_recv,0,BUFF_SIZE*sizeof(char));
-	recv(sock,buf_recv,BUFF_SIZE-1,0);
+	//recv(sock,buf_recv,BUFF_SIZE-1,0);
+	printf("verilator:getting the data\n");
+	cin >> buf_recv;
+	printf("verilator got data%s\n",buf_recv);
 #endif
 	char * queue = buf_recv;
 #ifdef USE_MAIN
@@ -41,16 +59,18 @@ bool fpvga_get_data(int sock){
 	return false;
 }
 void fpvga_send_data(int sock){
+	printf("led=%x,%d\n",led,led);
 	for (int i = 0;i < LED_NUM ; i++){
 		buf_send[i] = ((led >> i)& 1) + '0';
 		printf("i=%d:%d\n",i,buf_send[i]);
 	}
 	buf_send[LED_NUM] = '\0';
+	strcpy(msg_item.msg,buf_send);
+	msgsnd(msg_id_2,&msg_item,sizeof(msg_item_t),0);
 #ifndef USE_MAIN
-	send(sock,buf_send,BUFF_SIZE-1,0);
+//	send(sock,buf_send,BUFF_SIZE-1,0);
 #endif
 	printf("%s\n",buf_send);
-
 }
 void fpvga_init() {
 	contextp = new VerilatedContext;
@@ -73,7 +93,9 @@ void fpvga_clear()
 		delete contextp;
 	}
 }
-void fpvga(int sock){
+int main(int sock){
+	msg_id_1 = msgget((key_t)MSG_KEY_A,0666|IPC_CREAT);
+	msg_id_2 = msgget((key_t)MSG_KEY_B,0666|IPC_CREAT);
 	fpvga_init();
 	printf("done with init\n");
 	while(fpvga_get_data(sock)){
@@ -82,14 +104,5 @@ void fpvga(int sock){
 		fpvga_send_data(sock);
 	}
 	fpvga_clear();
-}
-#ifdef USE_MAIN
-int main(){
-	fpvga_init(); 
-	sprintf(buf_recv,"d0000100010001000");
-	if(fpvga_get_data(0))
-		fpvga_single();
-	fpvga_send_data(0);
 	return 0;
 }
-#endif
