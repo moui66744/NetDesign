@@ -36,7 +36,8 @@ bool fpvga_get_data(int sock){
 	memset(buf_recv,0,BUFF_SIZE*sizeof(char));
 	//recv(sock,buf_recv,BUFF_SIZE-1,0);
 	printf("verilator:getting the data\n");
-	cin >> buf_recv;
+	msgrcv(msg_id_1,&msg_item,sizeof(msg_item_t),0,0);
+	strcpy(buf_recv,msg_item.msg);
 	printf("verilator got data%s\n",buf_recv);
 #endif
 	char * queue = buf_recv;
@@ -94,8 +95,9 @@ void fpvga_clear()
 	}
 }
 int main(int sock){
-	msg_id_1 = msgget((key_t)MSG_KEY_A,0666|IPC_CREAT);
-	msg_id_2 = msgget((key_t)MSG_KEY_B,0666|IPC_CREAT);
+	freopen("test.out","w",stdout);
+	msg_id_1 = msgget((key_t)MSG_KEY_A,0666);
+	msg_id_2 = msgget((key_t)MSG_KEY_B,0666);
 	fpvga_init();
 	printf("done with init\n");
 	while(fpvga_get_data(sock)){

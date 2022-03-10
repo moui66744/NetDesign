@@ -1,5 +1,5 @@
 // Verilated -*- C++ -*-
-// DESCRIPTION: Verilator output: Primary model header
+// DESCRIPTION: Verilator output: Primary design header
 //
 // This header should be included by all source files instantiating the design.
 // The class here is then constructed to instantiate the design.
@@ -10,45 +10,43 @@
 
 #include "verilated_heavy.h"
 
+//==========
+
 class Vtop__Syms;
-class Vtop___024root;
 
-// This class is the main interface to the Verilated model
-class Vtop VL_NOT_FINAL {
-  private:
-    // Symbol table holding complete model state (owned by this class)
-    Vtop__Syms* const vlSymsp;
+//----------
 
+VL_MODULE(Vtop) {
   public:
 
     // PORTS
     // The application code writes and reads these signals to
     // propagate new values into/out from the Verilated model.
-    VL_IN16(&sw,15,0);
-    VL_OUT16(&led,15,0);
+    VL_IN16(sw,15,0);
+    VL_OUT16(led,15,0);
 
-    // CELLS
-    // Public to allow access to /* verilator public */ items.
-    // Otherwise the application code can consider these internals.
-
-    // Root instance pointer to allow access to model internals,
-    // including inlined /* verilator public_flat_* */ items.
-    Vtop___024root* const rootp;
+    // INTERNAL VARIABLES
+    // Internals; generally not touched by application code
+    Vtop__Syms* __VlSymsp;  // Symbol table
 
     // CONSTRUCTORS
+  private:
+    VL_UNCOPYABLE(Vtop);  ///< Copying not allowed
+  public:
     /// Construct the model; called by application code
     /// If contextp is null, then the model will use the default global context
     /// If name is "", then makes a wrapper with a
     /// single model invisible with respect to DPI scope names.
-    explicit Vtop(VerilatedContext* contextp, const char* name = "TOP");
-    explicit Vtop(const char* name = "TOP");
+    Vtop(VerilatedContext* contextp, const char* name = "TOP");
+    Vtop(const char* name = "TOP")
+      : Vtop(nullptr, name) {}
     /// Destroy the model; called (often implicitly) by application code
-    virtual ~Vtop();
-  private:
-    VL_UNCOPYABLE(Vtop);  ///< Copying not allowed
+    ~Vtop();
 
-  public:
     // API METHODS
+    /// Return current simulation context for this model.
+    /// Used to get to e.g. simulation time via contextp()->time()
+    VerilatedContext* contextp();
     /// Evaluate the model.  Application must call when inputs change.
     void eval() { eval_step(); }
     /// Evaluate when calling multiple units/models per time step.
@@ -58,11 +56,29 @@ class Vtop VL_NOT_FINAL {
     void eval_end_step() {}
     /// Simulation complete, run final blocks.  Application must call on completion.
     void final();
-    /// Return current simulation context for this model.
-    /// Used to get to e.g. simulation time via contextp()->time()
-    VerilatedContext* contextp() const;
-    /// Retrieve name of this model instance (as passed to constructor).
-    const char* name() const;
+
+    // INTERNAL METHODS
+    static void _eval_initial_loop(Vtop__Syms* __restrict vlSymsp);
+    void __Vconfigure(Vtop__Syms* symsp, bool first);
+  private:
+    static QData _change_request(Vtop__Syms* __restrict vlSymsp);
+    static QData _change_request_1(Vtop__Syms* __restrict vlSymsp);
+  public:
+    static void _combo__TOP__1(Vtop__Syms* __restrict vlSymsp);
+  private:
+    static void _ctor_var_reset(Vtop* self) VL_ATTR_COLD;
+  public:
+    static void _eval(Vtop__Syms* __restrict vlSymsp);
+  private:
+#ifdef VL_DEBUG
+    void _eval_debug_assertions();
+#endif  // VL_DEBUG
+  public:
+    static void _eval_initial(Vtop__Syms* __restrict vlSymsp) VL_ATTR_COLD;
+    static void _eval_settle(Vtop__Syms* __restrict vlSymsp) VL_ATTR_COLD;
 } VL_ATTR_ALIGNED(VL_CACHE_LINE_BYTES);
+
+//----------
+
 
 #endif  // guard
