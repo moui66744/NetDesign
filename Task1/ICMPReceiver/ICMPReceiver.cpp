@@ -70,13 +70,25 @@ int main() {
 	pcap_t* adhandle;
 	char errbuf[PCAP_ERRBUF_SIZE];
 	u_int netmask;
-	char packet_filter[] = "ip and icmp and dst host 192.168.2.200";//过滤条件
+	char packet_filter[] = "ip and icmp and dst host 192.168.99.176";//过滤条件
 	struct bpf_program fcode;
 
 	//获取设备列表
 	pcap_findalldevs_ex((char*)PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf);
+
+	for (d = alldevs; d; d = d->next) {
+		printf("%d. %s", ++i, d->name);
+		if (d->description) printf("(%s) \n", d->description);
+		else printf("\n");
+	}
+	printf("Enter the interface number:");
+	scanf("%d", &inum);
+	for (d = alldevs, i = 0; i < inum - 1; d = d->next, i++);
+	adhandle = pcap_open(d->name, 65536, PCAP_OPENFLAG_PROMISCUOUS, 1000, NULL, errbuf);
+	//netmask = 0xffff;
+
 	//打开适配器
-	adhandle = pcap_open(alldevs->name, 65536, PCAP_OPENFLAG_PROMISCUOUS, 1000, NULL, errbuf);
+	//adhandle = pcap_open(alldevs->name, 65536, PCAP_OPENFLAG_PROMISCUOUS, 1000, NULL, errbuf);
 	netmask = 0xffffff;
 	//设置过滤器
 	if (pcap_compile(adhandle, &fcode, packet_filter, 1, netmask) < 0) {
@@ -93,3 +105,4 @@ int main() {
 	pcap_loop(adhandle, 0, packet_handle, NULL);
 	return 0;
 }
+

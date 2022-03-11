@@ -35,22 +35,37 @@ struct msg_item_t{
 	long int type = 4;
 	char msg[MSG_SIZE];
 }msg_item;
+//structure for msg queue
+
 char buf_send[BUF_SIZE],buf_recv[BUF_SIZE],buf_cmd[BUF_SIZE],buf_res[BUF_SIZE];
+//some buffer
+
 void fpvga_interface(int sock){
 	int msg_id_1 = msgget((key_t)MSG_KEY_A,0666|IPC_CREAT);
 	int msg_id_2 = msgget((key_t)MSG_KEY_B,0666|IPC_CREAT);
+	//create two ms queue
 	execl("make","vmodel",NULL);
+	//build the verilator model
 	printf("end with buid\n");
-	FILE* fp = popen("obj_dir/vmodel > test.out","w");
-	while(true){
-		scanf("%s",buf_recv);
-		printf("recieve the string :%s\n",buf_recv);
-		fprintf(fp,"%s\n",buf_recv);
-		printf("send data:%s\n",buf_recv);
-		msgrcv(msg_id_2,&(msg_item),sizeof(msg_item_t),0,0);
-		strcpy(buf_send,msg_item.msg);
-		printf("%s\n",buf_send);
+	int pid = fork();
+	//use system call to run the model
+	if (pid < 0){
+		perror("failed to fork the process");
+		exit(-1);
 	}
+	if (pid == 0 ){
+		execl("/bin/bash -c ./obj_dir/vmodel",NULL);
+	}else
+		while(true){
+			scanf("%s",buf_recv);
+			printf("about to send :%s\n",buf_recv);
+			msg_item.type = 0;
+			strcpy(msg_item.msg,buf_recv);
+			msgsnd(msg_id_1,&(msg_item),sizeof(msg_item_t),0);
+			msgrcv(msg_id_2,&(msg_item),sizeof(msg_item_t),0,0);
+			strcpy(buf_send,msg_item.msg);
+			printf("%s\n",buf_send);
+		}
 }
 
 string process(char *cmd){

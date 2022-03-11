@@ -1,9 +1,3 @@
-#define SRC_IP { 192,168,1,106 }	//源主机IP
-#define DST_IP { 192,168,1,1 }		//目的主机IP
-#define SRC_MAC { 0x80, 0x30, 0x49, 0xAD, 0x49, 0xB5 }	//源主机MAC
-#define DST_MAC { 0xf4, 0x83, 0xcd, 0x3f, 0x4e, 0xb8 }	//网关路由MAC
-#define APATER "//Device//NPF_{ADDAD27F-0AFB-4AE1-B166-5C704DF51D50}"	// 源主机适配器名称
-
 //ICMP报文数据
 unsigned char* icmp_data = (unsigned char*)"abcdefghijklmnopqrstuvwabcdefghi";
 

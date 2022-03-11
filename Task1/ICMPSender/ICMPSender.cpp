@@ -106,7 +106,7 @@ int main() {
 	//获取设备列表
 	pcap_findalldevs_ex((char*)PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf);
 	//打开指定适配器
-	adhandle = pcap_open(alldevs->name, 65536, PCAP_OPENFLAG_PROMISCUOUS, 1000, NULL, errbuf);
+	adhandle = pcap_open(APATER, 65536, PCAP_OPENFLAG_PROMISCUOUS, 1000, NULL, errbuf);
 	//发送一次ICMP request报文
 	ping(adhandle);
 	return 0;

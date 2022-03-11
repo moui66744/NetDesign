@@ -7,7 +7,7 @@ all:vmodel
 vmodel:
 	verilator --exe --build  --cc top.v\
 		fpvga.cpp\
-		-CFLAGS -DTOP_NAME=Vtop \
+		-CFLAGS -DTOP_NAME=Vtop -CFLAGS -g\
 		-o $(VMODEL)
 clean:
 	rm -rf obj_dir/ test linux_server
@@ -24,5 +24,5 @@ test:
 		-o $(TARGET)
 	./obj_dir/$(TARGET)
 test_mq:vmodel
-	g++ -o test test.cpp
+	g++ -o test test.cpp -g
 	./test

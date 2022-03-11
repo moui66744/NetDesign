@@ -1,4 +1,5 @@
 # DESCRIPTION: Verilator output: Timestamp data for --skip-identical.  Delete at will.
+<<<<<<< HEAD
 C "--exe --build --cc top.v fpvga.cpp -CFLAGS -DTOP_NAME=Vtop -o vmodel"
 S   9959704   920850  1645627022   539751058  1645627022   539751058 "/usr/bin/verilator_bin"
 T      3799   525290  1646819264   417919084  1646819264   417919084 "obj_dir/Vtop.cpp"
@@ -13,3 +14,17 @@ T       277   525461  1646819264   421919549  1646819264   421919549 "obj_dir/Vt
 T         0        0  1646819264   421919549  1646819264   421919549 "obj_dir/Vtop__verFiles.dat"
 T      1608   525431  1646819264   417919084  1646819264   417919084 "obj_dir/Vtop_classes.mk"
 S        80   525521  1646742842   665406133  1646742842   661406134 "top.v"
+=======
+C "--exe --build --cc top.v fpvga.cpp -CFLAGS -DTOP_NAME=Vtop -CFLAGS -g -o vmodel"
+S  10353224   108890  1638803580   345411152  1625390025           0 "/usr/bin/verilator_bin"
+T      3651    62637  1646823268    84271871  1646823268    84271871 "obj_dir/Vtop.cpp"
+T      2782    62535  1646823268    84271871  1646823268    84271871 "obj_dir/Vtop.h"
+T      1783    62639  1646823268    84271871  1646823268    84271871 "obj_dir/Vtop.mk"
+T      1787    62636  1646823268    84271871  1646823268    84271871 "obj_dir/Vtop__Slow.cpp"
+T       618    62527  1646823268    84271871  1646823268    84271871 "obj_dir/Vtop__Syms.cpp"
+T       797    62528  1646823268    84271871  1646823268    84271871 "obj_dir/Vtop__Syms.h"
+T       215    62640  1646823268    84271871  1646823268    84271871 "obj_dir/Vtop__ver.d"
+T         0        0  1646823268    84271871  1646823268    84271871 "obj_dir/Vtop__verFiles.dat"
+T      1580    62638  1646823268    84271871  1646823268    84271871 "obj_dir/Vtop_classes.mk"
+S        80    62662  1646757128   822288751  1646757128   822288751 "top.v"
+>>>>>>> c58c9ff3d1e87c4421e8705a6203e2501bf23f61

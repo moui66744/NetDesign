@@ -39,7 +39,8 @@ bool fpvga_get_data(int sock){
 	memset(buf_recv,0,BUFF_SIZE*sizeof(char));
 	//recv(sock,buf_recv,BUFF_SIZE-1,0);
 	printf("verilator:getting the data\n");
-	cin >> buf_recv;
+	msgrcv(msg_id_1,&msg_item,sizeof(msg_item_t),0,0);
+	strcpy(buf_recv,msg_item.msg);
 	printf("verilator got data%s\n",buf_recv);
 #endif
 	char * queue = buf_recv;
