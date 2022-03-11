@@ -29,6 +29,10 @@ public class Client implements Runnable {
     public ImageIcon LEDOffIcon;
     public ImageIcon switchOnIcon;
     public ImageIcon switchOffIcon;
+    public ImageIcon runIcon;
+    public ImageIcon terminalIcon;
+    public ImageIcon uploadIcon;
+    public Font font;
 
     public Socket socket;
     public PrintWriter sender;
@@ -53,10 +57,14 @@ public class Client implements Runnable {
         panel3 = new JPanel(new FlowLayout());
         panel3.setBackground(Color.white);
 
-        LEDOnIcon = getScaledImage(new ImageIcon("resources/LED_on.png"), 50, 50);
-        LEDOffIcon = getScaledImage(new ImageIcon("resources/LED_off.png"), 50, 50);
-        switchOnIcon = getScaledImage(new ImageIcon("resources/switch_on.png"), 50, 50);
-        switchOffIcon = getScaledImage(new ImageIcon("resources/switch_off.png"), 50, 50);
+        LEDOnIcon = new ImageIcon("resources/LED_on.png");
+        LEDOffIcon = new ImageIcon("resources/LED_off.png");
+        switchOnIcon = new ImageIcon("resources/switch_on.png");
+        switchOffIcon = new ImageIcon("resources/switch_off.png");
+        runIcon = new ImageIcon("resources/run.png");
+        terminalIcon = new ImageIcon("resources/terminal.png");
+        uploadIcon = new ImageIcon("resources/terminal.png");
+        font = new Font("console", Font.BOLD, 14);
 
         // 创建LED
         LEDs = new JLabel[16];
@@ -86,7 +94,12 @@ public class Client implements Runnable {
 
         // 上传文件按钮
         chooseFileBtn = new JButton("choose file");
-        chooseFileBtn.setPreferredSize(new Dimension(120, 50));
+        chooseFileBtn.setFont(font);
+        chooseFileBtn.setPreferredSize(new Dimension(140, 100));
+        chooseFileBtn.setBackground(new Color(0xf6f6f6));
+        chooseFileBtn.setIcon(uploadIcon);
+        chooseFileBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        chooseFileBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         chooseFileBtn.addActionListener(e -> {
             // 创建一个默认的文件选取器
             JFileChooser fileChooser = new JFileChooser();
@@ -107,7 +120,12 @@ public class Client implements Runnable {
 
         // 运行按钮
         runBtn = new JToggleButton("run");
-        runBtn.setPreferredSize(new Dimension(120, 50));
+        runBtn.setFont(font);
+        runBtn.setPreferredSize(new Dimension(140, 100));
+        runBtn.setBackground(new Color(0xf6f6f6));
+        runBtn.setIcon(runIcon);
+        runBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        runBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         runBtn.addActionListener(e -> {
             JToggleButton runBtn = (JToggleButton) e.getSource();
             if (runBtn.isSelected()) {
@@ -122,7 +140,12 @@ public class Client implements Runnable {
 
         // 打开终端按钮
         openTerminalBtn = new JButton("open terminal");
-        openTerminalBtn.setPreferredSize(new Dimension(120, 50));
+        openTerminalBtn.setFont(font);
+        openTerminalBtn.setPreferredSize(new Dimension(140, 100));
+        openTerminalBtn.setBackground(new Color(0xf6f6f6));
+        openTerminalBtn.setIcon(terminalIcon);
+        openTerminalBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        openTerminalBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         openTerminalBtn.addActionListener(e -> {
             openTerminal();
         });
