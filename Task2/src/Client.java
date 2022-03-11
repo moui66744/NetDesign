@@ -8,6 +8,8 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import static java.lang.Thread.sleep;
+
 public class Client implements Runnable {
     public JFrame frame;
     public JPanel panel;
@@ -37,10 +39,6 @@ public class Client implements Runnable {
     public Socket socket;
     public PrintWriter sender;
     public BufferedReader recver;
-
-    public ImageIcon getScaledImage(ImageIcon icon, int width, int height) {
-        return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING));
-    }
 
     Client() throws IOException {
         frame = new JFrame("FPGA模拟器");
@@ -86,7 +84,6 @@ public class Client implements Runnable {
             // 添加 toggleBtns 的状态被改变的监听
             toggleBtns[i].addActionListener(e -> {
                 JToggleButton toggleBtn1 = (JToggleButton) e.getSource();
-//                System.out.println(toggleBtn1.getText() + " 是否选中: " + toggleBtn1.isSelected());
                 switchStatus[Arrays.asList(toggleBtns).indexOf(toggleBtn1)] = toggleBtn1.isSelected() ? 1 : 0;
             });
             panel2.add(toggleBtns[i]);
@@ -146,9 +143,7 @@ public class Client implements Runnable {
         openTerminalBtn.setIcon(terminalIcon);
         openTerminalBtn.setHorizontalTextPosition(SwingConstants.CENTER);
         openTerminalBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-        openTerminalBtn.addActionListener(e -> {
-            openTerminal();
-        });
+        openTerminalBtn.addActionListener(e -> openTerminal());
         panel3.add(openTerminalBtn);
 
         panel.add(panel1);
@@ -162,7 +157,8 @@ public class Client implements Runnable {
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    sender.println("exit");
+                    sender.print("exit");
+                    sender.flush();
                     sender.close();
                     recver.close();
                     socket.close();
@@ -200,10 +196,10 @@ public class Client implements Runnable {
             while (true) {
                 System.out.print(">");
                 String cmd = scan.nextLine();
-                if (cmd.indexOf("exit") != -1) {
+                if (cmd.contains("exit")) {
                     break;
                 }
-                sender.println(cmd);
+                sender.print(cmd);
                 sender.flush();
                 String result = recver.readLine();
                 System.out.println(result);
@@ -223,13 +219,12 @@ public class Client implements Runnable {
     public void run() {
         try {
             Scanner fileScan = new Scanner(new FileReader(filePath));
-            String cmd = "cat > a.v\n";
-            sender.flush();
+            StringBuilder cmd = new StringBuilder("fpvga ");// ? 是否需要回车
             while (fileScan.hasNextLine()) {
-                cmd += fileScan.nextLine() + "\n";
+                cmd.append(fileScan.nextLine()).append("\n");// ? 是否需要回车？
             }
             System.out.println(cmd);//
-            sender.println(cmd);
+            sender.print(cmd);
             sender.flush();
             System.out.println(recver.readLine());
             while (true) {
@@ -239,7 +234,7 @@ public class Client implements Runnable {
                     switchStatusSequence = switchStatusSequence + switchStatus[i];
                 }
                 System.out.println(switchStatusSequence);//
-                sender.println(switchStatusSequence);
+                sender.print(switchStatusSequence);
                 sender.flush();
                 String LEDStatusSequence = recver.readLine();
                 if (LEDStatusSequence.equals("this is output")) continue;//////////
@@ -250,13 +245,9 @@ public class Client implements Runnable {
                     System.out.print(LEDStatus[i]);//
                 }
                 setLEDStatus(LEDStatus);
-                Thread.sleep(1000);
+                sleep(1000);
             }
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (InterruptedException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
