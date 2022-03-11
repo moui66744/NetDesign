@@ -6,6 +6,9 @@
 #include <sys/msg.h>
 #include <sys/ipc.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 using namespace std;
 
 /*
@@ -22,7 +25,7 @@ TOP_NAME *top;
 VerilatedContext *contextp;
 int msg_id_1;
 int msg_id_2;
-
+const char* fifo_name = "./pipe";
 struct msg_item_t {
 	long int type;
 	char msg[MSG_SIZE];
@@ -96,6 +99,9 @@ void fpvga_clear()
 int main(int sock){
 	msg_id_1 = msgget((key_t)MSG_KEY_A,0666|IPC_CREAT);
 	msg_id_2 = msgget((key_t)MSG_KEY_B,0666|IPC_CREAT);
+	FILE *fp = open(fifo_name,O_RDONLY);
+	stdin = fp;
+	freopen("test.out","w",stdout);
 	fpvga_init();
 	printf("done with init\n");
 	while(fpvga_get_data(sock)){
