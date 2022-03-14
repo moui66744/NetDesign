@@ -111,6 +111,7 @@ public class Client implements Runnable {
             if (result == JFileChooser.APPROVE_OPTION) {
                 // 如果点击了"确定", 则获取选择的文件路径
                 filePath = fileChooser.getSelectedFile();
+                uploadFile();
             }
         });
         panel3.add(chooseFileBtn);
@@ -126,10 +127,12 @@ public class Client implements Runnable {
         runBtn.addActionListener(e -> {
             JToggleButton runBtn = (JToggleButton) e.getSource();
             if (runBtn.isSelected()) {
+                runBtn.setText("stop");
                 isRun = true;
                 runThread = new Thread(this);
                 runThread.start();
             } else {
+                runBtn.setText("run");
                 isRun = false;
             }
         });
@@ -185,9 +188,11 @@ public class Client implements Runnable {
         frame.setContentPane(panel);
         frame.setVisible(true);
 
-        socket = new Socket("localhost", 9999);
+        socket = new Socket("192.168.181.169", 6000);
         sender = new PrintWriter(socket.getOutputStream());
         recver = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        System.out.println("connect successfully!");
+//        openTerminal();
     }
 
     public void openTerminal() {
@@ -201,7 +206,12 @@ public class Client implements Runnable {
                 }
                 sender.print(cmd);
                 sender.flush();
-                String result = recver.readLine();
+                StringBuilder result = new StringBuilder();
+                while (true) {
+                    String line = recver.readLine();
+                    if (line.contains("ERESP")) break;
+                    result.append(line).append("\n");
+                }
                 System.out.println(result);
             }
         } catch (IOException e) {
@@ -215,30 +225,48 @@ public class Client implements Runnable {
         }
     }
 
+    public void uploadFile() {
+        try {
+            Scanner fileScan = new Scanner(new FileReader(filePath));
+            while (fileScan.hasNextLine()) {
+                String line = fileScan.nextLine();
+                sender.print(line);// ？ 是否需要回车
+                sender.flush();
+            }
+            sender.print("EREQ");
+            sender.flush();
+            System.out.println("reply: " + recver.readLine());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void run() {
         try {
-            Scanner fileScan = new Scanner(new FileReader(filePath));
-            StringBuilder cmd = new StringBuilder("fpvga ");// ? 是否需要回车
-            while (fileScan.hasNextLine()) {
-                cmd.append(fileScan.nextLine()).append("\n");// ? 是否需要回车？
-            }
-            System.out.println(cmd);//
+            StringBuilder cmd = new StringBuilder("fpvga");
             sender.print(cmd);
             sender.flush();
             System.out.println(recver.readLine());
             while (true) {
-                if (!isRun) break;
-                String switchStatusSequence = "in switch ";
-                for (int i=0; i<16; i++) {
-                    switchStatusSequence = switchStatusSequence + switchStatus[i];
+                if (!isRun) {
+                    StringBuilder ereq = new StringBuilder("EREQ");
+                    sender.print(ereq);
+                    sender.flush();
+                    System.out.println(recver.readLine());
+                    break;
                 }
-                System.out.println(switchStatusSequence);//
+                StringBuilder switchStatusSequence = new StringBuilder();
+                for (int i=0; i<16; i++) {
+                    switchStatusSequence.append(switchStatus[i]);
+                }
+                System.out.println("send switch: " + switchStatusSequence);
                 sender.print(switchStatusSequence);
                 sender.flush();
                 String LEDStatusSequence = recver.readLine();
-                if (LEDStatusSequence.equals("this is output")) continue;//////////
-                System.out.println("LED status: " + LEDStatusSequence);
+                System.out.println("recv LED: " + LEDStatusSequence);
                 int[] LEDStatus = new int[16];
                 for (int i=0; i<16; i++) {
                     LEDStatus[i] = LEDStatusSequence.charAt(i) - '0';

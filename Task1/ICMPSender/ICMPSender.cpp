@@ -11,7 +11,7 @@ using namespace std;
 使用winpcap发送ICMP echo requset报文
 注意：
 	计算机中一般采用小端模式存储数据
-	代码中使用大端模式生成数据
+	网络中规定高位字节优先存储的网络字节顺序，即大端模式
 	因此需要将大端模式转换成小端模式
 	可以通过函数：
 	htons(u_short)、htonl(u_long)
