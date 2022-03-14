@@ -10,9 +10,9 @@ vmodel:
 		-CFLAGS -DTOP_NAME=Vtop -CFLAGS -g\
 		-o $(VMODEL)
 clean:
-	rm -rf obj_dir/ test linux_server
+	rm -rf obj_dir/ test linux_server fifo*
 run: all
-	./obj_dir/$(TARGET)
+	./$(TARGET)
 debug:all
 	gdb ./obj_dir/$(TARGET)
 test:

@@ -9,6 +9,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include "linux_server.h"
+
 using namespace std;
 
 /*
@@ -25,28 +27,24 @@ TOP_NAME *top;
 VerilatedContext *contextp;
 int msg_id_1;
 int msg_id_2;
-const char* fifo_name = "./pipe";
-struct msg_item_t {
-	long int type;
-	char msg[MSG_SIZE];
-}msg_item;
+int fd_read,fd_write;
+
+
+
 static char buf_recv[BUFF_SIZE]="d1000100010001000";
 static char buf_send[BUFF_SIZE];
 static unsigned short sw = 0;
 static unsigned short led = 0;
 bool fpvga_get_data(int sock){
-#ifndef USE_MAIN
+
+	if (fd_read = -1){
+		fd_read = open(fifo_stov,O_RDONLY);
+	}
 	memset(buf_recv,0,BUFF_SIZE*sizeof(char));
 	//recv(sock,buf_recv,BUFF_SIZE-1,0);
 	printf("verilator:getting the data\n");
-	msgrcv(msg_id_1,&msg_item,sizeof(msg_item_t),0,0);
-	strcpy(buf_recv,msg_item.msg);
-	printf("verilator got data%s\n",buf_recv);
-#endif
+	read(fd_read,buf_recv,BUFF_SIZE);
 	char * queue = buf_recv;
-#ifdef USE_MAIN
-	printf("led:%s,queue[0]=%c\n",buf_recv,queue[0]);
-#endif	
 	if (queue[0] == 'd'){
 		queue = queue + 1;
 		for(int i=0;i<SW_NUM;i++){
@@ -63,14 +61,16 @@ bool fpvga_get_data(int sock){
 	return false;
 }
 void fpvga_send_data(int sock){
+	if (fd_write == -1 ){
+		fd_write = open(fifo_vtos,O_WRONLY);
+	}
 	printf("led=%x,%d\n",led,led);
 	for (int i = 0;i < LED_NUM ; i++){
 		buf_send[i] = ((led >> i)& 1) + '0';
 		printf("i=%d:%d\n",i,buf_send[i]);
 	}
 	buf_send[LED_NUM] = '\0';
-	strcpy(msg_item.msg,buf_send);
-	msgsnd(msg_id_2,&msg_item,sizeof(msg_item_t),0);
+	write(fd_write,buf_send,strlen(buf_send));
 #ifndef USE_MAIN
 //	send(sock,buf_send,BUFF_SIZE-1,0);
 #endif
@@ -98,11 +98,9 @@ void fpvga_clear()
 	}
 }
 int main(int sock){
-	msg_id_1 = msgget((key_t)MSG_KEY_A,0666|IPC_CREAT);
-	msg_id_2 = msgget((key_t)MSG_KEY_B,0666|IPC_CREAT);
-	FILE *fp = open(fifo_name,O_RDONLY);
-	stdin = fp;
 	freopen("test.out","w",stdout);
+	printf("first line\n");
+	fd_write = open(fifo_vtos,O_WRONLY);
 	fpvga_init();
 	printf("done with init\n");
 	while(fpvga_get_data(sock)){

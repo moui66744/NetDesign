@@ -348,3 +348,5 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+Task2/linux_server/obj_dir/Vtop__ALL.cpp
+Task2/linux_server/obj_dir/
