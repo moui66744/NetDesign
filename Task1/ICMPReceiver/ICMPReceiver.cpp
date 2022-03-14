@@ -52,8 +52,8 @@ void packet_handle(u_char* param, const struct pcap_pkthdr* header, const u_char
 	// ICMP首部信息
 	fprintf(fp, "---------------------------------\n");
 	fprintf(fp, "ICMP Header:\n");
-	fprintf(fp, "Type: %d (%s)\n", htons(ich->type_code) & 0xf0, ((htons(ich->type_code) & 0xf0) == 0 ? "Echo (ping) reply" : "null"));
-	fprintf(fp, "Code: %d\n", htons(ich->type_code) & 0xf);
+	fprintf(fp, "Type: %d (%s)\n", (htons(ich->type_code) & 0xff00) >> 8, (((htons(ich->type_code) & 0xff00) >> 8) == 0 ? "Echo (ping) request" : "null"));
+	fprintf(fp, "Code: %d\n", htons(ich->type_code) & 0x00ff);
 	fprintf(fp, "Checksum: 0x%04x\n", htons(ich->checksum));
 	// ICMP数据信息
 	fprintf(fp, "---------------------------------\n");
