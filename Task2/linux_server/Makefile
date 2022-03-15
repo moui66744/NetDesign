@@ -4,15 +4,17 @@ VMODEL=vmodel
 all:vmodel
 	g++ linux_server.cpp -o $(TARGET)\
 		-lpthread -g
-vmodel:
+vmodel: #build wmodel
+	touch ./obj_dir/$(VMODEL)
+	rm ./obj_dir/$(VMODEL)
 	verilator --exe --build  --cc top.v\
 		fpvga.cpp\
-		-CFLAGS -DTOP_NAME=Vtop -CFLAGS -g\
+		-CFLAGS -DTOP_NAME=Vtop -CFLAGS -g -CFLAGS -w\
 		-o $(VMODEL)
 clean:
-	rm -rf obj_dir/ test linux_server
+	rm -rf obj_dir/ test linux_server fifo*
 run: all
-	./obj_dir/$(TARGET)
+	./$(TARGET)
 debug:all
 	gdb ./obj_dir/$(TARGET)
 test:
@@ -23,6 +25,6 @@ test:
 		-CFLAGS -DUSE_MAIN\
 		-o $(TARGET)
 	./obj_dir/$(TARGET)
-test_mq:vmodel
+test_mq:vmodel # local test
 	g++ -o test test.cpp -g
 	./test
