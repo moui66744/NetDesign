@@ -350,3 +350,6 @@ MigrationBackup/
 .ionide/
 Task2/linux_server/obj_dir/Vtop__ALL.cpp
 Task2/linux_server/obj_dir/
+.vscode/launch.json
+.vscode/settings.json
+.vscode/tasks.json

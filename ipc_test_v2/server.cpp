@@ -8,12 +8,13 @@
 
 using namespace std;
 int msgid1,msgid2;
-#define BUF_SIZE 512
+#define BUF_SIZE 2
 char buf[BUF_SIZE];
 int father_process(int pid){
 	int data;
 	printf("open fd_write\n");
 	printf("This program will help you to calculate the value of x*x\n");
+	while(true){
 	scanf("%d",&data);
 	int fd_write = open(fifo_stov,O_WRONLY,0);//pipe fd = file describer
 	if (fd_write == -1){
@@ -32,6 +33,7 @@ int father_process(int pid){
 	read(fd_read,buf,BUF_SIZE);
 	sscanf(buf,"%d",&data);
 	printf("The answer is %d\n",data);
+	}
 	int status;
 	wait(&status);
 
@@ -59,7 +61,7 @@ int main(){
 		printf("Enter father_process\n");
 		father_process(pid);	
 	} else {
-		execl("bash","-c","./build/vmodel",NULL);
+		execl("./build/vmodel",NULL);
 	}
 
 	return 0;

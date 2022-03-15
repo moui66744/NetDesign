@@ -25,6 +25,7 @@
 #include <fcntl.h>
 
 #include <fstream>
+#include <assert.h>
 
 #include "linux_server.h"
 
@@ -43,26 +44,45 @@ struct msg_item_t
 	char msg[MSG_SIZE];
 } msg_item;
 char buf_send[BUF_SIZE], buf_recv[BUF_SIZE], buf_cmd[BUF_SIZE], buf_res[BUF_SIZE];
+
+
+int file_recieve(int sock){
+	ofstream out("top.v");
+	string res;
+	do{
+		memset(buf_recv,0,BUF_SIZE);
+		recv(sock,buf_recv,BUF_SIZE,0);
+		res.append(buf_recv);
+	}while(strstr(res.c_str(),"EREQ") == NULL);
+	char *p = const_cast<char*>(res.c_str());
+	char *subp = strstr(p,"EREQ");
+	subp[0] = '\0';
+	out << p;
+	out.close();
+	sprintf(buf_send, "upload success\n");
+	send(sock, buf_send, strlen(buf_send), 0);
+	return 0;
+}
+
 int father_process(int pid, int sock)
 {
 	int data;
 	while (true)
 	{
 		printf("open fd_write\n");
-		recv(sock, buf_recv, BUF_SIZE - 1, 0);
-		if (strncmp(buf_recv, "ENDP", 4) == 0)
-			break;
-		sscanf(buf_recv, "%d", &data);
-		char buf[BUF_SIZE];
+		memset(buf_recv,0,BUF_SIZE);
+		recv(sock,buf_recv,BUF_SIZE,0);
+		printf("recieve data: %s\n",buf_recv);
 		int fd_write = open(fifo_stov, O_WRONLY, 0); // pipe fd = file describer
 		if (fd_write == -1)
 		{
 			cerr << "Server : error occuried when open fifo write\n";
 			exit(-1);
 		}
-		sprintf(buf, "%d", data);
-		write(fd_write, buf, strlen(buf));
-		printf("write data\n");
+		write(fd_write, buf_recv,FIFO_MSG_SIZE);
+		close(fd_write);
+		if (strncmp(buf_recv, "EREQ", 4) == 0)
+			break;
 		int fd_read = open(fifo_vtos, O_RDONLY, 0);
 
 		if (fd_read == -1)
@@ -70,17 +90,21 @@ int father_process(int pid, int sock)
 			cerr << "Server : error occuried when open fifo\n";
 			exit(-1);
 		}
-		read(fd_read, buf, BUF_SIZE);
-		sscanf(buf, "%d", &data);
+		read(fd_read, buf_send,FIFO_MSG_SIZE);
+		close(fd_read);
+		buf_send[16] = '\n';
+		printf("get result:[%s]\nENDENDEND\n",buf_send);
+		send(sock,buf_send,strlen(buf_send),0);
 	}
 	int status;
 	wait(&status);
-
+	sprintf(buf_send,"fpvga exit\n");
+	send(sock,buf_send,strlen(buf_send),0);
 	return 0;
 }
 void fpvga_interface(int sock)
 {
-	execl("make", "vmodel", NULL);
+	// execl("./test.sh", NULL);
 	if (access(fifo_vtos, F_OK) == -1)
 	{
 		int res = mkfifo(fifo_vtos, 0777);
@@ -109,7 +133,7 @@ void fpvga_interface(int sock)
 	}
 	else
 	{
-		execl("./build/vmodel", NULL);
+		execl("./obj_dir/vmodel", NULL);
 	}
 }
 
@@ -147,17 +171,21 @@ void *socket_handler(void *p)
 		recv(sock, buf_recv, BUF_SIZE - 1, 0);
 		sscanf(buf_recv, "%s", op);
 		printf("op:%s\n", op);
-		if (strcmp(op, "exit") == 0)
+		if (strcmp(op, "shutdown") == 0)
 		{
 			printf("exit\n");
-			break;
+			exit(0);
 		}
 		else if (strcmp(op, "fpvga") == 0)
 		{
 			printf("fpvga launching\n");
-			sprintf(buf_send, "fpvga enable");
-			send(sock, buf_recv, strlen(buf_send), 0);
+			sprintf(buf_send, "fpvga enable\n");
+			send(sock, buf_send, strlen(buf_send), 0);
 			fpvga_interface(sock);
+		} else if (strcmp(op,"upload")==0){
+			sprintf(buf_send, "upload start\n");
+			send(sock, buf_send, strlen(buf_send), 0);
+			file_recieve(sock);
 		}
 		else
 		{

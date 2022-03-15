@@ -5,9 +5,11 @@ all:vmodel
 	g++ linux_server.cpp -o $(TARGET)\
 		-lpthread -g
 vmodel:
+	touch ./obj_dir/$(VMODEL)
+	rm ./obj_dir/$(VMODEL)
 	verilator --exe --build  --cc top.v\
 		fpvga.cpp\
-		-CFLAGS -DTOP_NAME=Vtop -CFLAGS -g\
+		-CFLAGS -DTOP_NAME=Vtop -CFLAGS -g -CFLAGS -w\
 		-o $(VMODEL)
 clean:
 	rm -rf obj_dir/ test linux_server fifo*
