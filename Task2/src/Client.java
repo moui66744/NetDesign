@@ -26,6 +26,7 @@ public class Client implements Runnable {
 
     public Thread runThread;
     public boolean isRun;
+    public boolean enableRun;
 
     public ImageIcon LEDOnIcon;
     public ImageIcon LEDOffIcon;
@@ -160,7 +161,7 @@ public class Client implements Runnable {
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    sender.print("exit");
+                    sender.print("shutdown");
                     sender.flush();
                     sender.close();
                     recver.close();
@@ -188,7 +189,7 @@ public class Client implements Runnable {
         frame.setContentPane(panel);
         frame.setVisible(true);
 
-        socket = new Socket("192.168.181.169", 6000);
+        socket = new Socket("192.168.251.169", 6000);
         sender = new PrintWriter(socket.getOutputStream());
         recver = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         System.out.println("connect successfully!");
@@ -227,15 +228,31 @@ public class Client implements Runnable {
 
     public void uploadFile() {
         try {
+            StringBuilder cmd = new StringBuilder("upload");
+            sender.print(cmd);
+            sender.flush();
+            System.out.println(recver.readLine());
+            // 逐行发送文件
             Scanner fileScan = new Scanner(new FileReader(filePath));
             while (fileScan.hasNextLine()) {
                 String line = fileScan.nextLine();
-                sender.print(line);// ？ 是否需要回车
+                System.out.println(line);
+                sender.print(line + "\n");
                 sender.flush();
             }
             sender.print("EREQ");
             sender.flush();
-            System.out.println("reply: " + recver.readLine());
+            System.out.println("recv: " + recver.readLine());
+
+            sender.print("make vmodel");
+            sender.flush();
+            StringBuilder result = new StringBuilder();
+            while (true) {
+                String line = recver.readLine();
+                if (line.contains("ERESP")) break;
+                result.append(line).append("\n");
+            }
+            System.out.println(result);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -273,7 +290,7 @@ public class Client implements Runnable {
                     System.out.print(LEDStatus[i]);//
                 }
                 setLEDStatus(LEDStatus);
-                sleep(1000);
+                sleep(10);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
