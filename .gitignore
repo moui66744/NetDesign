@@ -353,3 +353,5 @@ Task2/linux_server/obj_dir/
 .vscode/launch.json
 .vscode/settings.json
 .vscode/tasks.json
+Task2/linux_server/top.v
+Task2/linux_server/test.out

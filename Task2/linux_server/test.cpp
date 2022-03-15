@@ -1,3 +1,15 @@
+/**
+ * @file test.cpp
+ * @author zakilim
+ * @brief 
+ * 	this function used for local test without the internet connection. 
+ * @version 0.1
+ * @date 2022-03-15
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #include "linux_server.h"
 
 #include <iostream>

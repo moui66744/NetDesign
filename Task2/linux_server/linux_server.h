@@ -3,13 +3,12 @@
 
 #include <sys/types.h>
 #include <stdio.h>
-const key_t msg_key_stov = 1234;
-const key_t msg_key_vtos = 2345;
 
-const long int msg_type = 1;
+const char * fifo_vtos = "./fifo_vtos"; 
+//fifo from virtual model to server
 
-const char * fifo_vtos = "./fifo_vtos";
 const char * fifo_stov = "./fifo_stov";
+//fifo from server to virtual model
 
 // void read_fifo(int fd,char * str){
 //     char ch;
@@ -28,6 +27,10 @@ const char * fifo_stov = "./fifo_stov";
 //         i++;
 //     }
 // }
-#define FIFO_MSG_SIZE 16
+#define FIFO_SEND_SIZE 18
+//the length of data sent from server to virtual model
+
+#define FIFO_RECV_SIZE 16
+//the length of data server recieved from virtual model  
 
 #endif //ifndef __LINUX_SERVER_H__

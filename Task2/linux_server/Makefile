@@ -4,7 +4,7 @@ VMODEL=vmodel
 all:vmodel
 	g++ linux_server.cpp -o $(TARGET)\
 		-lpthread -g
-vmodel:
+vmodel: #build wmodel
 	touch ./obj_dir/$(VMODEL)
 	rm ./obj_dir/$(VMODEL)
 	verilator --exe --build  --cc top.v\
@@ -25,6 +25,6 @@ test:
 		-CFLAGS -DUSE_MAIN\
 		-o $(TARGET)
 	./obj_dir/$(TARGET)
-test_mq:vmodel
+test_mq:vmodel # local test
 	g++ -o test test.cpp -g
 	./test

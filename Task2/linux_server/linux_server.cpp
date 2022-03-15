@@ -1,3 +1,14 @@
+/**
+ * @file linux_server.cpp
+ * @author
+ * @brief 
+ * 	this file contains the main program of server
+ * @version 0.1
+ * @date 2022-03-15
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include <iostream>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -45,33 +56,60 @@ struct msg_item_t
 } msg_item;
 char buf_send[BUF_SIZE], buf_recv[BUF_SIZE], buf_cmd[BUF_SIZE], buf_res[BUF_SIZE];
 
-
+/**
+ * @brief 
+ * 	the function recieve the file send from client, and write it to top.v
+ * @param sock 
+ * 	the sockid associated to the client
+ * @return int 
+ * 	return 0 when success
+ */
 int file_recieve(int sock){
 	ofstream out("top.v");
+	// ofstream to write data to file top.v
 	string res;
 	do{
 		memset(buf_recv,0,BUF_SIZE);
 		recv(sock,buf_recv,BUF_SIZE,0);
 		res.append(buf_recv);
 	}while(strstr(res.c_str(),"EREQ") == NULL);
+	// loop to recv file contents until the end flag EREQ shows
 	char *p = const_cast<char*>(res.c_str());
+	// when use string::c_str,the function will send a const char* pointer back
+	// but strstr takes char * pointer without the const constraint
+	// therefore we use const_cast here
 	char *subp = strstr(p,"EREQ");
 	subp[0] = '\0';
+	//insert the \0 to end the string
 	out << p;
 	out.close();
+	//close file stream
 	sprintf(buf_send, "upload success\n");
 	send(sock, buf_send, strlen(buf_send), 0);
+	//send success infomation to client
 	return 0;
 }
 
+/**
+ * @brief 
+ * 	this function use to receive data from client, write it to fifo,
+ *  and get result from virtual fpga model
+ * @param pid 
+ *  the pid is used by function wait();
+ * @param sock 
+ * 	the sockid associated to the client
+ * @return int
+ * 	return 0 after child process exit  
+ */
 int father_process(int pid, int sock)
 {
-	int data;
 	while (true)
 	{
 		printf("open fd_write\n");
 		memset(buf_recv,0,BUF_SIZE);
+		// reset the buf_recv
 		recv(sock,buf_recv,BUF_SIZE,0);
+		// receive data from clients
 		printf("recieve data: %s\n",buf_recv);
 		int fd_write = open(fifo_stov, O_WRONLY, 0); // pipe fd = file describer
 		if (fd_write == -1)
@@ -79,10 +117,16 @@ int father_process(int pid, int sock)
 			cerr << "Server : error occuried when open fifo write\n";
 			exit(-1);
 		}
-		write(fd_write, buf_recv,FIFO_MSG_SIZE);
+		write(fd_write, buf_recv,FIFO_SEND_SIZE);
+		//write data or command to server
 		close(fd_write);
 		if (strncmp(buf_recv, "EREQ", 4) == 0)
 			break;
+		
+		// if client send EREQ,the infinite loop will end
+		// the child process need to know that the EREQ has been sent
+		// but the server no need to read from vmodel
+
 		int fd_read = open(fifo_vtos, O_RDONLY, 0);
 
 		if (fd_read == -1)
@@ -90,7 +134,8 @@ int father_process(int pid, int sock)
 			cerr << "Server : error occuried when open fifo\n";
 			exit(-1);
 		}
-		read(fd_read, buf_send,FIFO_MSG_SIZE);
+		read(fd_read, buf_send,FIFO_RECV_SIZE);
+		//read data from vmodel and send it back to server
 		close(fd_read);
 		buf_send[16] = '\n';
 		printf("get result:[%s]\nENDENDEND\n",buf_send);
@@ -98,10 +143,19 @@ int father_process(int pid, int sock)
 	}
 	int status;
 	wait(&status);
+	//wait for the child process ends
 	sprintf(buf_send,"fpvga exit\n");
 	send(sock,buf_send,strlen(buf_send),0);
+	//send corresponding response to client
 	return 0;
 }
+/**
+ * @brief 
+ * 	the fpvga interface, prepare for the core proessing function 
+ * 	father_process, create the child process for verilating 
+ * @param sock
+ * 	the socket id ,will be sent to father process for commuication 
+ */
 void fpvga_interface(int sock)
 {
 	// execl("./test.sh", NULL);
@@ -113,6 +167,8 @@ void fpvga_interface(int sock)
 			printf("fifo Created:%s\n", fifo_vtos);
 		}
 	}
+	// create fifo if needed
+
 	if (access(fifo_stov, F_OK) == -1)
 	{
 		int res = mkfifo(fifo_stov, 0777);
@@ -121,6 +177,8 @@ void fpvga_interface(int sock)
 			printf("fifo_Created:%s\n", fifo_stov);
 		}
 	}
+	// create fifo if needed
+	
 	int pid = fork();
 	if (pid < 0)
 	{
@@ -130,13 +188,22 @@ void fpvga_interface(int sock)
 	{
 		printf("Enter father_process\n");
 		father_process(pid, sock);
+		//enter to the father process for further process
 	}
 	else
 	{
 		execl("./obj_dir/vmodel", NULL);
+		//child process execute the vmodel
 	}
 }
-
+/**
+ * @brief 
+ * 	process the normal shell command
+ * @param cmd 
+ * 	the pointer point to the cmd from clients
+ * @return string 
+ * return the result of the command
+ */
 string process(char *cmd)
 {
 	memset(buf_send, 0, BUF_SIZE * sizeof(char));
@@ -157,6 +224,17 @@ string process(char *cmd)
 	printf("live so far\n");
 	return res;
 }
+
+/**
+ * @brief 
+ * 	the main function for the server ,receive the instrution from the
+ * 	client, and choose different function according to the operation 
+ * 	field
+ * @param p
+ * 	the pointer point to the socket id 
+ * @return void* 
+ * 	return nothing
+ */
 void *socket_handler(void *p)
 {
 	int sock = *(int *)p;
@@ -204,6 +282,11 @@ void *socket_handler(void *p)
 
 int main()
 {
+	/**
+	 * @brief 
+	 *  main function is used to make connection between server 
+	 *  and client
+	 */
 	// definition
 	in_port_t ip = htons(PORT_ID);
 	sockaddr_in serv_addr;
