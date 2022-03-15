@@ -32,7 +32,7 @@ public class Client implements Runnable {
     public JPanel panel3;
     public JLabel[] LEDs;                           // 16 LEDs of fpvga
     public JToggleButton[] switches;                // 16 switches of fpvga
-    public JLabel rst;                              // rst btn of fpvga
+    public JButton rst;                              // rst btn of fpvga
     public JButton chooseFileBtn;                   // choose file uploaded to Server
     public JToggleButton runBtn;                    // run fpvga
     public JButton openTerminalBtn;                 // open terminal
@@ -110,10 +110,15 @@ public class Client implements Runnable {
             panel2.add(switches[i]);
         }
 
-        // add reset
+        // reset
         isRst = false;
-        rst = new JLabel();
+        rst = new JButton("reset");
+        rst.setFont(font);
+        rst.setPreferredSize(new Dimension(140, 100));
+        rst.setBackground(new Color(0xf6f6f6));
         rst.setIcon(rstOffIcon);
+        rst.setHorizontalTextPosition(SwingConstants.CENTER);
+        rst.setVerticalTextPosition(SwingConstants.BOTTOM);
         // add mouse listener
         rst.addMouseListener(new MouseListener() {
             @Override
