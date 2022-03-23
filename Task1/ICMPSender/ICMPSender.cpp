@@ -8,20 +8,20 @@
 using namespace std;
 
 /*
-Ê¹ÓÃwinpcap·¢ËÍICMP echo requset±¨ÎÄ
-×¢Òâ£º
-	¼ÆËã»úÖĞÒ»°ã²ÉÓÃĞ¡¶ËÄ£Ê½´æ´¢Êı¾İ
-	ÍøÂçÖĞ¹æ¶¨¸ßÎ»×Ö½ÚÓÅÏÈ´æ´¢µÄÍøÂç×Ö½ÚË³Ğò£¬¼´´ó¶ËÄ£Ê½
-	Òò´ËĞèÒª½«´ó¶ËÄ£Ê½×ª»»³ÉĞ¡¶ËÄ£Ê½
-	¿ÉÒÔÍ¨¹ıº¯Êı£º
-	htons(u_short)¡¢htonl(u_long)
-	ÊµÏÖ´óĞ¡¶ËÖ®¼äµÄ×ª»»
+ä½¿ç”¨winpcapå‘é€ICMP echo requsetæŠ¥æ–‡
+æ³¨æ„ï¼š
+	è®¡ç®—æœºä¸­ä¸€èˆ¬é‡‡ç”¨å°ç«¯æ¨¡å¼å­˜å‚¨æ•°æ®
+	ç½‘ç»œä¸­è§„å®šé«˜ä½å­—èŠ‚ä¼˜å…ˆå­˜å‚¨çš„ç½‘ç»œå­—èŠ‚é¡ºåºï¼Œå³å¤§ç«¯æ¨¡å¼
+	å› æ­¤éœ€è¦å°†å¤§ç«¯æ¨¡å¼è½¬æ¢æˆå°ç«¯æ¨¡å¼
+	å¯ä»¥é€šè¿‡å‡½æ•°ï¼š
+	htons(u_short)ã€htonl(u_long)
+	å®ç°å¤§å°ç«¯ä¹‹é—´çš„è½¬æ¢
 */
 
 
-//¶ş½øÖÆ·´ÂëĞ£ÑéºÍ¼ÆËã
-//buf: ´ı¼ÆËãĞòÁĞ
-//size: ĞòÁĞÕ¼ÓÃ¿Õ¼ä´óĞ¡
+//äºŒè¿›åˆ¶åç æ ¡éªŒå’Œè®¡ç®—
+//buf: å¾…è®¡ç®—åºåˆ—
+//size: åºåˆ—å ç”¨ç©ºé—´å¤§å°
 unsigned short CheckSum(unsigned short* buf, int size) {
 	unsigned int checksum = 0;
 	unsigned short* t_buf = buf;
@@ -31,17 +31,18 @@ unsigned short CheckSum(unsigned short* buf, int size) {
 		t_size -= sizeof(unsigned short);
 	}
 	if (t_size > 0) checksum += *(unsigned char*)t_buf;
-	checksum = (checksum >> 16) + (checksum & 0xFFFF); //½«¸ß16bitÓëµÍ16bitÏà¼Ó
-	checksum += (checksum >> 16); //½«½øÎ»µ½¸ßÎ»µÄ16bitÓëµÍ16bit ÔÙÏà¼Ó
+	while (checksum > 0xffff) {
+		checksum = (checksum >> 16) + (checksum & 0xFFFF); //å°†é«˜16bitä¸ä½16bitç›¸åŠ 
+	}
 	return (unsigned short)(~checksum);
 }
 
-//Éú³ÉICMPÊ×²¿
+//ç”ŸæˆICMPé¦–éƒ¨
 void fill_icmp(icmp_header* ich) {
 	unsigned char icmp_buf[100];
-	//Ìî³äich
-	ich->type_code = htons(0x0800);		//requestÀàĞÍÎª0x0800
-	ich->checksum = htons(0);			//Ğ£ÑéºÍÏÈÖÃ0
+	//å¡«å……ich
+	ich->type_code = htons(0x0800);		//requestç±»å‹ä¸º0x0800
+	ich->checksum = htons(0);			//æ ¡éªŒå’Œå…ˆç½®0
 	ich->id = htons(0x0001);
 	ich->serial = htons(0x0022);
 	memcpy(icmp_buf, ich, sizeof(icmp_header));
@@ -49,49 +50,49 @@ void fill_icmp(icmp_header* ich) {
 	ich->checksum = CheckSum((unsigned short*)icmp_buf, sizeof(icmp_header) + 32);
 }
 
-//Éú³ÉIPÊ×²¿
+//ç”ŸæˆIPé¦–éƒ¨
 void fill_ip(ip_header* ih) {
 	unsigned char ip_header_buf[100];
-	// Ìî³äih
-	ih->version_head_len = 0x45;		//IPv4£¬Ê×²¿³¤20B
-	ih->tos = 0;						//·şÎñÀàĞÍ
-	ih->len = htons(60);				//IP±¨ÎÄ×Ü³¤
-	ih->identification = htons(0x1f78);	//±êÊ¶
-	ih->flag_offset = htons(0x0000);	//±êÖ¾_Æ¬Æ«ÒÆ
-	ih->ttl = 128;						//Éú´æÊµ¼ù
-	ih->proto = 1;						//·â×°ICMP£¬Òò´ËĞ­Òé×Ö¶ÎÎª1
-	ih->checksum = htons(0);			//Ğ£ÑéºÍÏÈÖÃ0
-	ih->saddr = SRC_IP;					//Ô´IP
-	ih->daddr = DST_IP;					//Ä¿µÄIP
-	// ¼ÆËãIPÊ×²¿Ğ£ÑéºÍ
+	// å¡«å……ih
+	ih->version_head_len = 0x45;		//IPv4ï¼Œé¦–éƒ¨é•¿20B
+	ih->tos = 0;						//æœåŠ¡ç±»å‹
+	ih->len = htons(60);				//IPæŠ¥æ–‡æ€»é•¿
+	ih->identification = htons(0x1f78);	//æ ‡è¯†
+	ih->flag_offset = htons(0x0000);	//æ ‡å¿—_ç‰‡åç§»
+	ih->ttl = 128;						//ç”Ÿå­˜å®è·µ
+	ih->proto = 1;						//å°è£…ICMPï¼Œå› æ­¤åè®®å­—æ®µä¸º1
+	ih->checksum = htons(0);			//æ ¡éªŒå’Œå…ˆç½®0
+	ih->saddr = SRC_IP;					//æºIP
+	ih->daddr = DST_IP;					//ç›®çš„IP
+	// è®¡ç®—IPé¦–éƒ¨æ ¡éªŒå’Œ
 	memcpy(ip_header_buf, ih, sizeof(ip_header));
 	ih->checksum = CheckSum((unsigned short*)ip_header_buf, sizeof(ip_header));
 }
 
-//Éú³ÉÒÔÌ«ÍøÖ¡Ê×²¿
+//ç”Ÿæˆä»¥å¤ªç½‘å¸§é¦–éƒ¨
 void fill_ethernet(ethernet_header* eh) {
-	// Ìî³äeh
-	eh->smac = SRC_MAC;					//Ô´Ö÷»úMAC
-	eh->dmac = DST_MAC;					//Íø¹ØÂ·ÓÉMAC
-	eh->type = htons(0x0800);//IPĞ­Òé
+	// å¡«å……eh
+	eh->smac = SRC_MAC;					//æºä¸»æœºMAC
+	eh->dmac = DST_MAC;					//ç½‘å…³è·¯ç”±MAC
+	eh->type = htons(0x0800);//IPåè®®
 }
 
 void ping(pcap_t* adhandle) {
-	// ·¢ËÍ 14B(MACÊ×Î²) + 20B(IPÊ×²¿) + 8B(ICMPÊ×²¿) + 32B(Êı¾İ) = 74B
+	// å‘é€ 14B(MACé¦–å°¾) + 20B(IPé¦–éƒ¨) + 8B(ICMPé¦–éƒ¨) + 32B(æ•°æ®) = 74B
 	unsigned char buffer[100];
 	icmp_header ich;
 	ip_header ih;
 	ethernet_header eh;
-	// Éú³É±¨ÎÄ
+	// ç”ŸæˆæŠ¥æ–‡
 	fill_icmp(&ich);
 	fill_ip(&ih);
 	fill_ethernet(&eh);
-	// Ìî³äbuffer
+	// å¡«å……buffer
 	memcpy(buffer, &eh, 14);
 	memcpy(buffer + 14, &ih, sizeof(ih));
 	memcpy(buffer + 14 + sizeof(ih), &ich, sizeof(ich));
 	memcpy(buffer + 14 + sizeof(ih) + sizeof(ich), icmp_data, 32);
-	// ·¢ËÍ
+	// å‘é€
 	pcap_sendpacket(adhandle, (const u_char*)buffer, 74);
 }
 
@@ -103,11 +104,11 @@ int main() {
 	u_int netmask;
 	struct bpf_program fcode;
 
-	//»ñÈ¡Éè±¸ÁĞ±í
+	//è·å–è®¾å¤‡åˆ—è¡¨
 	pcap_findalldevs_ex((char*)PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf);
-	//´ò¿ªÖ¸¶¨ÊÊÅäÆ÷
+	//æ‰“å¼€æŒ‡å®šé€‚é…å™¨
 	adhandle = pcap_open(APATER, 65536, PCAP_OPENFLAG_PROMISCUOUS, 1000, NULL, errbuf);
-	//·¢ËÍÒ»´ÎICMP request±¨ÎÄ
+	//å‘é€ä¸€æ¬¡ICMP requestæŠ¥æ–‡
 	ping(adhandle);
 	return 0;
 }

@@ -1,7 +1,7 @@
-#define SRC_IP { 192,168,99,164 }	//源主机IP
-#define DST_IP { 192,168,99,176 }		//目的主机IP
+#define SRC_IP { 192,168,56,164 }	//源主机IP
+#define DST_IP { 192,168,56,176 }		//目的主机IP
 #define SRC_MAC { 0x80, 0x30, 0x49, 0xAD, 0x49, 0xB5 }	//源主机MAC
-#define DST_MAC { 0xd4, 0x25, 0x8b, 0x9b, 0x16, 0x7b }	//网关路由MAC
+#define DST_MAC { 0xd4, 0x25, 0x8b, 0x9b, 0x16, 0x7b }
 #define APATER "//Device//NPF_{ADDAD27F-0AFB-4AE1-B166-5C704DF51D50}"	// 源主机适配器名称
 
 //ICMP报文数据

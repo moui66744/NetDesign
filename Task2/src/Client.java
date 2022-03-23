@@ -258,7 +258,7 @@ public class Client implements Runnable {
         frame.setVisible(true);
 
         // connect with Server
-        socket = new Socket("192.168.134.169", 6000);
+        socket = new Socket("192.168.56.169", 6000);
         sender = new PrintWriter(socket.getOutputStream());
         recver = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         System.out.println("connect successfully!");
