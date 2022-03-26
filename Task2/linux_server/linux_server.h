@@ -30,7 +30,7 @@ const char * fifo_stov = "./fifo_stov";
 #define FIFO_SEND_SIZE 18
 //the length of data sent from server to virtual model
 
-#define FIFO_RECV_SIZE 16
+#define FIFO_RECV_SIZE 32
 //the length of data server recieved from virtual model  
 
 #endif //ifndef __LINUX_SERVER_H__

@@ -42,7 +42,7 @@
 
 #define PORT_ID 6000
 #define OP_SIZE 64
-#define BUF_SIZE 512
+#define BUF_SIZE 1024
 #define MSG_SIZE 32
 #define MSG_KEY_A 9527
 #define MSG_KEY_B 9528
@@ -70,7 +70,7 @@ int file_recieve(int sock){
 	string res;
 	do{
 		memset(buf_recv,0,BUF_SIZE);
-		recv(sock,buf_recv,BUF_SIZE,0);
+		recv(sock,buf_recv,BUF_SIZE-1,0);
 		res.append(buf_recv);
 	}while(strstr(res.c_str(),"EREQ") == NULL);
 	// loop to recv file contents until the end flag EREQ shows
@@ -83,6 +83,7 @@ int file_recieve(int sock){
 	//insert the \0 to end the string
 	out << p;
 	out.close();
+	printf("file content\n{\n%s\n}\n",res.c_str());
 	//close file stream
 	sprintf(buf_send, "upload success\n");
 	send(sock, buf_send, strlen(buf_send), 0);
@@ -137,7 +138,7 @@ int father_process(int pid, int sock)
 		read(fd_read, buf_send,FIFO_RECV_SIZE);
 		//read data from vmodel and send it back to server
 		close(fd_read);
-		buf_send[16] = '\n';
+		buf_send[32] = '\n';
 		printf("get result:[%s]\nENDENDEND\n",buf_send);
 		send(sock,buf_send,strlen(buf_send),0);
 	}
@@ -252,7 +253,7 @@ void *socket_handler(void *p)
 		if (strcmp(op, "shutdown") == 0)
 		{
 			printf("exit\n");
-			exit(0);
+			break;
 		}
 		else if (strcmp(op, "fpvga") == 0)
 		{
@@ -313,11 +314,11 @@ int main()
 
 	res = listen(serv_sock, 5);
 	socklen_t socklen = sizeof(sockaddr);
-	// while(true){
+	while(true){
 	int tcp_conn = accept(serv_sock, (sockaddr *)&client_addr, &socklen);
 	printf("Connection from :%s\n", inet_ntoa(client_addr.sin_addr));
 	pthread_create(&pt, NULL, socket_handler, &tcp_conn);
-	//}
+	}
 	// socket_handler(&tcp_conn);
 
 	void *useless;
