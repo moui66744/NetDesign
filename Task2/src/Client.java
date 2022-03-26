@@ -27,16 +27,19 @@ public class Client implements Runnable {
     // Java GUI component
     public JFrame frame;
     public JPanel panel;
+    public JPanel panel0;
     public JPanel panel1;
     public JPanel panel2;
     public JPanel panel3;
+    public DigitalTube[] digitalTubes;              // 2 digital tubes
     public JLabel[] LEDs;                           // 16 LEDs of fpvga
     public JToggleButton[] switches;                // 16 switches of fpvga
-    public JLabel rst;                              // rst btn of fpvga
+    public JButton rst;                             // rst btn of fpvga
     public JButton chooseFileBtn;                   // choose file uploaded to Server
+
     public JToggleButton runBtn;                    // run fpvga
     public JButton openTerminalBtn;                 // open terminal
-    public File filePath = new File(""); // Client file path of *.v file
+    public File filePath = new File("");            // Client file path of *.v file
     public int[] switchStatus = new int[16];        // record switch status
     // icon and font
     public ImageIcon LEDOnIcon;
@@ -61,12 +64,14 @@ public class Client implements Runnable {
 
     Client() throws IOException {
         frame = new JFrame("FPVGA");        // title
-        frame.setSize(1000, 400);  // window size 1000 * 400
+        frame.setSize(1000, 650);  // window size 1000 * 650
         frame.setLocationRelativeTo(null);          // at the center of the screen
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         // set layout
-        panel = new JPanel(new GridLayout(3, 1));
+        panel = new JPanel(new GridLayout(4, 1));
         panel.setBackground(Color.white);
+        panel0 = new JPanel(new FlowLayout());
+        panel0.setBackground(Color.white);
         panel1 = new JPanel(new GridLayout(0, 16));
         panel1.setBackground(Color.white);
         panel2 = new JPanel(new GridLayout(0, 16));
@@ -84,6 +89,15 @@ public class Client implements Runnable {
         terminalIcon = new ImageIcon("resources/terminal.png");
         uploadIcon = new ImageIcon("resources/terminal.png");
         font = new Font("console", Font.BOLD, 14);
+
+        // create Digital Tube
+        digitalTubes = new DigitalTube[2];
+        for (int i=0; i<2; i++) {
+            digitalTubes[i] = new DigitalTube();
+            digitalTubes[i].setPreferredSize(new Dimension(80, 250));
+            digitalTubes[i].input = "0000000";// Initial state
+            panel0.add(digitalTubes[i]);
+        }
 
         // create LED
         LEDs = new JLabel[16];
@@ -110,10 +124,15 @@ public class Client implements Runnable {
             panel2.add(switches[i]);
         }
 
-        // add reset
+        // reset
         isRst = false;
-        rst = new JLabel();
+        rst = new JButton("reset");
+        rst.setFont(font);
+        rst.setPreferredSize(new Dimension(140, 100));
+        rst.setBackground(new Color(0xf6f6f6));
         rst.setIcon(rstOffIcon);
+        rst.setHorizontalTextPosition(SwingConstants.CENTER);
+        rst.setVerticalTextPosition(SwingConstants.BOTTOM);
         // add mouse listener
         rst.addMouseListener(new MouseListener() {
             @Override
@@ -197,6 +216,7 @@ public class Client implements Runnable {
         openTerminalBtn.addActionListener(e -> openTerminal());
         panel3.add(openTerminalBtn);
 
+        panel.add(panel0);
         panel.add(panel1);
         panel.add(panel2);
         panel.add(panel3);
@@ -238,7 +258,7 @@ public class Client implements Runnable {
         frame.setVisible(true);
 
         // connect with Server
-        socket = new Socket("192.168.251.169", 6000);
+        socket = new Socket("192.168.88.128", 6000);
         sender = new PrintWriter(socket.getOutputStream());
         recver = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         System.out.println("connect successfully!");
@@ -281,6 +301,18 @@ public class Client implements Runnable {
     public void setLEDStatus(int[] LEDStatus) {
         for (int i=0; i<16; i++) {
             LEDs[i].setIcon(LEDStatus[i] == 1 ? LEDOnIcon : LEDOffIcon);
+        }
+    }
+
+    /**
+     * set digital tube according to seq
+     * seq[7:0]: The digital tube on the left
+     * seq[15:8]: The digital tube on the right
+     * */
+    public void setDigitalTube(String seq) {
+        for (int i=0; i<2; i++) {
+            digitalTubes[i].input = seq.substring(i * 8, (i+1)*8);
+            digitalTubes[i].repaint();
         }
     }
 
@@ -368,12 +400,13 @@ public class Client implements Runnable {
                 // Server send LEDstatus to Client
                 String LEDStatusSequence = recver.readLine();
                 System.out.println("recv LED: " + LEDStatusSequence);
-                int[] LEDStatus = new int[16];
+                int[] LEDStatus = new int[32];
                 for (int i=0; i<16; i++) {
                     LEDStatus[i] = LEDStatusSequence.charAt(i) - '0';
                     System.out.print(LEDStatus[i]);
                 }
                 setLEDStatus(LEDStatus);// change LED status
+                setDigitalTube(LEDStatusSequence.substring(16));
                 // It can be considered that the clock frequency of FPVGA is 10 milliseconds by default
                 // (If the network delay is ignored)
                 sleep(10);
