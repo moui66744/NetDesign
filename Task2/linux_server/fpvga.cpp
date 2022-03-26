@@ -55,6 +55,7 @@ static unsigned short clk = 0;
 //clk : clock signal
 static unsigned short rst = 0;
 //rst : reset button
+static unsigned short seg = 0;
 
 /**
  * @brief 
@@ -109,7 +110,12 @@ void fpvga_send_data(){
 		buf_send[i] = ((led >> 15 - i)& 1) + '0';
 		printf("i=%d:%d\n",i,buf_send[i]);
 	}
-	buf_send[LED_NUM] = '\0';
+	printf("led=%x,%d\n",led,led);
+	for (int i = 0;i < LED_NUM ; i++){
+		buf_send[i+16] = ((seg >> 15 - i)& 1) + '0';
+		printf("i=%d:%d\n",i,buf_send[i+16]);
+	}
+	buf_send[LED_NUM*2] = '\0';
 	write(fd_write,buf_send,FIFO_RECV_SIZE);
 	//write data to fifo
 	close(fd_write);
@@ -138,7 +144,8 @@ void fpvga_single(){
 		top->rst = rst;
 		top->eval();
 		led = top->led;
-		printf("In this test,sw=%d,led=%d\n",sw,led);
+		seg = top->seg;
+		printf("In this test,sw=%d,led=%d,seg=%d\n",sw,led);
 }
 /**
  * @brief 

@@ -2,7 +2,8 @@ module light(
 	input clk,
 	input rst,
 	input [15:0] sw,
-	output reg [15:0] led
+	output reg [15:0] led,
+	output seg
 );
 	reg [31:0] count;
 	always @(posedge clk) begin

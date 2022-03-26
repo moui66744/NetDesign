@@ -58,8 +58,8 @@ int father_process(int pid)
 			cerr << "Server : error occuried when open fifo write\n";
 			exit(-1);
 		}
-		sprintf(buf_write, "1000100010001000");
-		write(fd_write, buf_write, FIFO_MSG_SIZE);
+		sprintf(buf_write, "111000100010001000");
+		write(fd_write, buf_write, FIFO_SEND_SIZE);
 		printf("write data\n");
 		int fd_read = open(fifo_vtos, O_RDONLY, 0);
 
@@ -68,7 +68,7 @@ int father_process(int pid)
 			cerr << "Server : error occuried when open fifo\n";
 			exit(-1);
 		}
-		read(fd_read, buf_read, BUF_SIZE);
+		read(fd_read, buf_read, FIFO_RECV_SIZE);
 		printf("the input is %s\nThe answer is %s\n", buf_write, buf_read);
 	}
 	int fd_write = open(fifo_stov, O_WRONLY, 0); // pipe fd = file describer
@@ -78,7 +78,7 @@ int father_process(int pid)
 		exit(-1);
 	}
 	sprintf(buf_write, "EREQ");
-	write(fd_write, buf_write, FIFO_MSG_SIZE);
+	write(fd_write, buf_write, FIFO_RECV_SIZE);
 	printf("the input is %s\nThe answer is %s\n", buf_write, buf_read);
 	int status;
 	wait(&status);
