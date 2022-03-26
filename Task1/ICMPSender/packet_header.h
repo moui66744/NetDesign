@@ -1,47 +1,47 @@
-#define SRC_IP { 192,168,56,164 }	//Ô´Ö÷»úIP
-#define DST_IP { 192,168,56,176 }		//Ä¿µÄÖ÷»úIP
-#define SRC_MAC { 0x80, 0x30, 0x49, 0xAD, 0x49, 0xB5 }	//Ô´Ö÷»úMAC
+#define SRC_IP { 192,168,165,164 }	//æºä¸»æœºIP
+#define DST_IP { 192,168,165,176 }		//ç›®çš„ä¸»æœºIP
+#define SRC_MAC { 0x80, 0x30, 0x49, 0xAD, 0x49, 0xB5 }	//æºä¸»æœºMAC
 #define DST_MAC { 0xd4, 0x25, 0x8b, 0x9b, 0x16, 0x7b }
-#define APATER "//Device//NPF_{ADDAD27F-0AFB-4AE1-B166-5C704DF51D50}"	// Ô´Ö÷»úÊÊÅäÆ÷Ãû³Æ
+#define APATER "//Device//NPF_{ADDAD27F-0AFB-4AE1-B166-5C704DF51D50}"	// æºä¸»æœºé€‚é…å™¨åç§°
 
-//ICMP±¨ÎÄÊı¾İ
+//ICMPæŠ¥æ–‡æ•°æ®
 unsigned char* icmp_data = (unsigned char*)"abcdefghijklmnopqrstuvwabcdefghi";
 
-//IPµØÖ·
+//IPåœ°å€
 typedef struct ip_address {
 	unsigned char byte1, byte2, byte3, byte4;
 } ip_address;
 
-//IP±¨ÎÄÊ×²¿
+//IPæŠ¥æ–‡é¦–éƒ¨
 typedef struct ip_header {
-	unsigned int version_head_len : 8;	//°æ±¾_Ê×²¿³¤(4BÎªµ¥Î»)
-	unsigned int tos : 8;				//·şÎñ
-	unsigned int len : 16;				//IP±¨ÎÄ×Ü³¤(1BÎªµ¥Î»)
-	unsigned int identification : 16;	//±êÊ¶
-	unsigned int flag_offset : 16;		//±êÖ¾_Æ¬Æ«ÒÆ
-	unsigned int ttl : 8;				//Éú´æÊ±¼ä
-	unsigned int proto : 8;				//Ğ­Òé£¬ICMPÎª1
-	unsigned int checksum : 16;			//Ê×²¿Ğ£ÑéºÍ
-	ip_address saddr;					//Ô´IP
-	ip_address daddr;					//Ä¿µÄIP
+	unsigned int version_head_len : 8;	//ç‰ˆæœ¬_é¦–éƒ¨é•¿(4Bä¸ºå•ä½)
+	unsigned int tos : 8;				//æœåŠ¡
+	unsigned int len : 16;				//IPæŠ¥æ–‡æ€»é•¿(1Bä¸ºå•ä½)
+	unsigned int identification : 16;	//æ ‡è¯†
+	unsigned int flag_offset : 16;		//æ ‡å¿—_ç‰‡åç§»
+	unsigned int ttl : 8;				//ç”Ÿå­˜æ—¶é—´
+	unsigned int proto : 8;				//åè®®ï¼ŒICMPä¸º1
+	unsigned int checksum : 16;			//é¦–éƒ¨æ ¡éªŒå’Œ
+	ip_address saddr;					//æºIP
+	ip_address daddr;					//ç›®çš„IP
 } ip_header;
 
-//ICMP±¨ÎÄÊ×²¿
+//ICMPæŠ¥æ–‡é¦–éƒ¨
 typedef struct icmp_header {
-	unsigned int type_code : 16;		//ÀàĞÍ£¬requestÎª8
-	unsigned int checksum : 16;			//Ê×²¿Ğ£ÑéºÍ
+	unsigned int type_code : 16;		//ç±»å‹ï¼Œrequestä¸º8
+	unsigned int checksum : 16;			//é¦–éƒ¨æ ¡éªŒå’Œ
 	unsigned int id : 16;				//
 	unsigned int serial : 16;			//
 } icmp_header;
 
-//MACµØÖ·
+//MACåœ°å€
 typedef struct mac_addr {
 	unsigned char byte1, byte2, byte3, byte4, byte5, byte6;
 } mac_addr;
 
-//ÒÔÌ«ÍøÖ¡Í·
+//ä»¥å¤ªç½‘å¸§å¤´
 typedef struct ethernet_header {
-	mac_addr dmac;						//Ä¿µÄMAC
-	mac_addr smac;						//Ô´MAC
-	unsigned int type : 16;				//·â×°Ğ­ÒéÀàĞÍ£¬IPÎª0x0800
+	mac_addr dmac;						//ç›®çš„MAC
+	mac_addr smac;						//æºMAC
+	unsigned int type : 16;				//å°è£…åè®®ç±»å‹ï¼ŒIPä¸º0x0800
 } ethernet_header;
