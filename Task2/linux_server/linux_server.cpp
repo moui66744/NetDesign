@@ -139,7 +139,7 @@ int father_process(int pid, int sock)
 		//read data from vmodel and send it back to server
 		close(fd_read);
 		buf_send[32] = '\n';
-		printf("get result:[%s]\nENDENDEND\n",buf_send);
+		// printf("get result:[%s]\nENDENDEND\n",buf_send);
 		send(sock,buf_send,strlen(buf_send),0);
 	}
 	int status;
